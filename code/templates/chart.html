@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Election Results</title>
+
+  <!-- Bootstrap for styling -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+  <style>
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #e9ecef;
+    }
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .chart-container {
+      position: relative;
+      height: 450px;
+      width: 100%;
+      margin-top: 30px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #777;
+    }
+    .back-btn {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .back-btn a {
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      background-color: #007bff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+    .back-btn a:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-chart-bar"></i> Live Election Results</h1>
+
+    <!-- Dynamic Chart Containers -->
+    <div id="charts"></div>
+
+    <!-- Back button -->
+    <div class="back-btn">
+      <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 Election System. All Rights Reserved.</p>
+    </footer>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // Fetch the chart data dynamically from the backend (through Flask)
+    fetch('/chart_data')
+      .then(response => response.json())
+      .then(data => {
+        const chartsContainer = document.getElementById('charts');
+
+        // Create a chart for each position
+        Object.keys(data).forEach(position => {
+          // Create a new canvas element for each position
+          const chartContainer = document.createElement('div');
+          chartContainer.className = 'chart-container';
+          const canvas = document.createElement('canvas');
+          chartContainer.appendChild(canvas);
+          chartsContainer.appendChild(chartContainer);
+
+          // Configuring the chart
+          const ctx = canvas.getContext('2d');
+          new Chart(ctx, {
+            type: 'line', // Line chart for each position
+            data: {
+              labels: data[position].labels, // Labels for each candidate
+              datasets: [{
+                label: `Votes Count for ${position}`,
+                data: data[position].data, // Vote count data
+                backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4 // For smooth curves
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Vote Count',
+                    font: {
+                      size: 16
+                    }
+                  }
+                },
+                x: {
+                  title: {
+                    display: true,
+                    text: 'Candidates',
+                    font: {
+                      size: 16
+                    }
+                  }
+                }
+              },
+              plugins: {
+                legend: {
+                  labels: {
+                    font: {
+                      size: 16
+                    }
+                  }
+                }
+              }
+            }
+          });
+        });
+      });
+  </script>
+</body>
+</html>
